@@ -1,0 +1,13 @@
+# Seuls src/, models/ et requirements-api.txt entrent dans l'image.
+.venv/
+.git/
+.env
+data/
+notebooks/
+powerbi/
+tests/
+sql/
+**/__pycache__/
+.pytest_cache/
+.ipynb_checkpoints/
+*.md

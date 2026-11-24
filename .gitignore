@@ -1,0 +1,31 @@
+# --- Données ---
+# Le dataset brut (Kaggle, ~90 Mo, contient des données personnelles) n'est jamais versionné.
+data/raw/*
+!data/raw/.gitkeep
+# Les fichiers intermédiaires sont régénérés par l'ETL.
+data/processed/*
+!data/processed/.gitkeep
+
+# --- Modèles entraînés (régénérés par les notebooks) ---
+models/*
+!models/.gitkeep
+
+# --- Secrets ---
+.env
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# --- Power BI (fichier lourd, publié séparément si besoin) ---
+powerbi/*.pbix
+
+# --- IDE / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

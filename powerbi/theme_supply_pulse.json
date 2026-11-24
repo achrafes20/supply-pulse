@@ -1,0 +1,79 @@
+{
+  "name": "Supply Pulse",
+  "dataColors": [
+    "#2A78D6",
+    "#EB6834",
+    "#1BAF7A",
+    "#EDA100",
+    "#E87BA4",
+    "#008300",
+    "#6250D6",
+    "#E34948"
+  ],
+  "background": "#FCFCFB",
+  "foreground": "#0B0B0B",
+  "tableAccent": "#2A78D6",
+  "good": "#0CA30C",
+  "neutral": "#FAB219",
+  "bad": "#D03B3B",
+  "maximum": "#104281",
+  "center": "#6DA7EC",
+  "minimum": "#CDE2FB",
+  "null": "#C3C2B7",
+  "hyperlink": "#2A78D6",
+  "visitedHyperlink": "#6250D6",
+  "textClasses": {
+    "callout": { "fontSize": 26, "fontFace": "Segoe UI Semibold", "color": "#0B0B0B" },
+    "title": { "fontSize": 12, "fontFace": "Segoe UI Semibold", "color": "#0B0B0B" },
+    "header": { "fontSize": 11, "fontFace": "Segoe UI Semibold", "color": "#0B0B0B" },
+    "label": { "fontSize": 10, "fontFace": "Segoe UI", "color": "#52514E" }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "background": [{ "show": true, "color": { "solid": { "color": "#FCFCFB" } }, "transparency": 0 }],
+        "border": [{ "show": true, "color": { "solid": { "color": "#E1E0D9" } }, "radius": 8 }],
+        "dropShadow": [{ "show": false }],
+        "title": [{ "show": true, "fontColor": { "solid": { "color": "#0B0B0B" } }, "fontSize": 12, "fontFamily": "Segoe UI Semibold" }],
+        "valueAxis": [{ "gridlineShow": true, "gridlineColor": { "solid": { "color": "#E1E0D9" } }, "gridlineThickness": 1, "labelColor": { "solid": { "color": "#898781" } } }],
+        "categoryAxis": [{ "gridlineShow": false, "labelColor": { "solid": { "color": "#898781" } } }],
+        "legend": [{ "labelColor": { "solid": { "color": "#52514E" } }, "position": "Top" }]
+      }
+    },
+    "page": {
+      "*": {
+        "background": [{ "color": { "solid": { "color": "#F9F9F7" } }, "transparency": 0 }],
+        "outspace": [{ "color": { "solid": { "color": "#F9F9F7" } } }]
+      }
+    },
+    "card": {
+      "*": {
+        "labels": [{ "color": { "solid": { "color": "#0B0B0B" } }, "fontSize": 26 }],
+        "categoryLabels": [{ "color": { "solid": { "color": "#52514E" } }, "fontSize": 10 }]
+      }
+    },
+    "lineChart": {
+      "*": {
+        "lineStyles": [{ "strokeWidth": 2 }]
+      }
+    },
+    "slicer": {
+      "*": {
+        "header": [{ "fontColor": { "solid": { "color": "#52514E" } }, "textSize": 10 }],
+        "items": [{ "fontColor": { "solid": { "color": "#0B0B0B" } }, "textSize": 10 }]
+      }
+    },
+    "tableEx": {
+      "*": {
+        "columnHeaders": [{ "fontColor": { "solid": { "color": "#0B0B0B" } }, "backColor": { "solid": { "color": "#F0EFEC" } } }],
+        "grid": [{ "gridHorizontalColor": { "solid": { "color": "#E1E0D9" } }, "rowPadding": 4 }]
+      }
+    },
+    "pivotTable": {
+      "*": {
+        "columnHeaders": [{ "fontColor": { "solid": { "color": "#0B0B0B" } }, "backColor": { "solid": { "color": "#F0EFEC" } } }],
+        "rowHeaders": [{ "fontColor": { "solid": { "color": "#0B0B0B" } } }]
+      }
+    }
+  }
+}

@@ -1,0 +1,260 @@
+createOrReplace
+
+	relationship rel_commandes_date_commande
+		fromColumn: fait_commandes.date_commande_id
+		toColumn: dim_date.date_id
+
+	relationship rel_commandes_date_expedition
+		isActive: false
+		fromColumn: fait_commandes.date_expedition_id
+		toColumn: dim_date.date_id
+
+	relationship rel_commandes_produit
+		fromColumn: fait_commandes.produit_id
+		toColumn: dim_produit.produit_id
+
+	relationship rel_commandes_client
+		fromColumn: fait_commandes.client_id
+		toColumn: dim_client.client_id
+
+	relationship rel_commandes_geographie
+		fromColumn: fait_commandes.geographie_id
+		toColumn: dim_geographie.geographie_id
+
+	relationship rel_commandes_expedition
+		fromColumn: fait_commandes.expedition_id
+		toColumn: dim_expedition.expedition_id
+
+	relationship rel_produit_categorie
+		fromColumn: dim_produit.categorie
+		toColumn: dim_categorie.categorie
+
+	relationship rel_categorie_groupe
+		fromColumn: dim_categorie.groupe_prevision
+		toColumn: dim_groupe_prevision.groupe_prevision
+
+	relationship rel_risque_date
+		fromColumn: fait_risque.date_commande_id
+		toColumn: dim_date.date_id
+
+	relationship rel_risque_client
+		fromColumn: fait_risque.client_id
+		toColumn: dim_client.client_id
+
+	relationship rel_risque_geographie
+		fromColumn: fait_risque.geographie_id
+		toColumn: dim_geographie.geographie_id
+
+	relationship rel_risque_expedition
+		fromColumn: fait_risque.expedition_id
+		toColumn: dim_expedition.expedition_id
+
+	relationship rel_demande_date
+		fromColumn: fait_demande_hebdo.date_semaine_id
+		toColumn: dim_date.date_id
+
+	relationship rel_demande_groupe
+		fromColumn: fait_demande_hebdo.groupe_prevision
+		toColumn: dim_groupe_prevision.groupe_prevision
+
+	relationship rel_prevision_date
+		fromColumn: fait_prevision.date_semaine_id
+		toColumn: dim_date.date_id
+
+	relationship rel_prevision_groupe
+		fromColumn: fait_prevision.groupe_prevision
+		toColumn: dim_groupe_prevision.groupe_prevision
+
+	ref table _Mesures
+
+		measure 'CA net' = SUM ( fait_commandes[montant_net] )
+			formatString: \$#,0
+			displayFolder: 1. Ventes
+
+		measure 'CA brut' = SUM ( fait_commandes[montant_brut] )
+			formatString: \$#,0
+			displayFolder: 1. Ventes
+
+		measure 'Remises' = SUM ( fait_commandes[remise] )
+			formatString: \$#,0
+			displayFolder: 1. Ventes
+
+		measure 'Taux de remise' = DIVIDE ( _Mesures[Remises], _Mesures[CA brut] )
+			formatString: 0.0%
+			displayFolder: 1. Ventes
+
+		measure 'Profit' = SUM ( fait_commandes[profit] )
+			formatString: \$#,0
+			displayFolder: 1. Ventes
+
+		measure 'Marge %' = DIVIDE ( _Mesures[Profit], _Mesures[CA net] )
+			formatString: 0.0%
+			displayFolder: 1. Ventes
+
+		measure 'Commandes' = DISTINCTCOUNT ( fait_commandes[commande_id] )
+			formatString: #,0
+			displayFolder: 1. Ventes
+
+		measure 'Lignes' = COUNTROWS ( fait_commandes )
+			formatString: #,0
+			displayFolder: 1. Ventes
+
+		measure 'Unités' = SUM ( fait_commandes[quantite] )
+			formatString: #,0
+			displayFolder: 1. Ventes
+
+		measure 'Clients actifs' = DISTINCTCOUNT ( fait_commandes[client_id] )
+			formatString: #,0
+			displayFolder: 1. Ventes
+
+		measure 'Panier moyen' = DIVIDE ( _Mesures[CA net], _Mesures[Commandes] )
+			formatString: \$#,0.00
+			displayFolder: 1. Ventes
+
+		measure 'CA N-1' = CALCULATE ( _Mesures[CA net], SAMEPERIODLASTYEAR ( dim_date[date] ) )
+			formatString: \$#,0
+			displayFolder: 1. Ventes
+
+		measure 'Évolution CA %' = VAR ca_n1 = _Mesures[CA N-1] RETURN IF ( NOT ISBLANK ( ca_n1 ), DIVIDE ( _Mesures[CA net] - ca_n1, ca_n1 ) )
+			formatString: +0.0%;-0.0%;0.0%
+			displayFolder: 1. Ventes
+
+		measure 'CA cumul annuel' = TOTALYTD ( _Mesures[CA net], dim_date[date] )
+			formatString: \$#,0
+			displayFolder: 1. Ventes
+
+		measure 'Commandes expédiées' = CALCULATE ( _Mesures[Commandes], fait_commandes[est_annulee] = 0 )
+			formatString: #,0
+			displayFolder: 2. Livraison
+
+		measure 'Commandes en retard' = CALCULATE ( _Mesures[Commandes], fait_commandes[est_annulee] = 0, fait_commandes[est_en_retard] = 1 )
+			formatString: #,0
+			displayFolder: 2. Livraison
+
+		measure 'Taux de retard' = DIVIDE ( _Mesures[Commandes en retard], _Mesures[Commandes expédiées] )
+			formatString: 0.0%
+			displayFolder: 2. Livraison
+
+		measure 'OTD %' = IF ( NOT ISBLANK ( _Mesures[Commandes expédiées] ), 1 - _Mesures[Taux de retard] )
+			formatString: 0.0%
+			displayFolder: 2. Livraison
+
+		measure 'Retard moyen (j)' = AVERAGEX ( CALCULATETABLE ( VALUES ( fait_commandes[commande_id] ), fait_commandes[est_annulee] = 0, fait_commandes[est_en_retard] = 1 ), CALCULATE ( MAX ( fait_commandes[ecart_jours] ) ) )
+			formatString: 0.00
+			displayFolder: 2. Livraison
+
+		measure 'Délai réel moyen (j)' = AVERAGEX ( CALCULATETABLE ( VALUES ( fait_commandes[commande_id] ), fait_commandes[est_annulee] = 0 ), CALCULATE ( MAX ( fait_commandes[jours_reels] ) ) )
+			formatString: 0.00
+			displayFolder: 2. Livraison
+
+		measure 'Délai prévu moyen (j)' = AVERAGEX ( CALCULATETABLE ( VALUES ( fait_commandes[commande_id] ), fait_commandes[est_annulee] = 0 ), CALCULATE ( MAX ( fait_commandes[jours_reels] ) - MAX ( fait_commandes[ecart_jours] ) ) )
+			formatString: 0.00
+			displayFolder: 2. Livraison
+
+		measure 'Taux d''annulation' = DIVIDE ( CALCULATE ( _Mesures[Commandes], fait_commandes[est_annulee] = 1 ), _Mesures[Commandes] )
+			formatString: 0.0%
+			displayFolder: 2. Livraison
+
+		measure 'CA des commandes en retard' = CALCULATE ( _Mesures[CA net], fait_commandes[est_annulee] = 0, fait_commandes[est_en_retard] = 1 )
+			formatString: \$#,0
+			displayFolder: 2. Livraison
+
+		measure 'Commandes expédiées (date d''expédition)' = CALCULATE ( _Mesures[Commandes expédiées], USERELATIONSHIP ( fait_commandes[date_expedition_id], dim_date[date_id] ) )
+			formatString: #,0
+			displayFolder: 2. Livraison
+
+		measure 'Commandes scorées' = COUNTROWS ( fait_risque )
+			formatString: #,0
+			displayFolder: 3. Risque
+
+		measure 'Probabilité moyenne de retard' = AVERAGE ( fait_risque[proba_retard] )
+			formatString: 0.0%
+			displayFolder: 3. Risque
+
+		measure 'Commandes alertées' = CALCULATE ( _Mesures[Commandes scorées], fait_risque[alerte_retard] = 1 )
+			formatString: #,0
+			displayFolder: 3. Risque
+
+		measure '% commandes alertées' = DIVIDE ( _Mesures[Commandes alertées], _Mesures[Commandes scorées] )
+			formatString: 0.0%
+			displayFolder: 3. Risque
+
+		measure 'Commandes risque élevé' = CALCULATE ( _Mesures[Commandes scorées], fait_risque[niveau_risque] = "élevé" )
+			formatString: #,0
+			displayFolder: 3. Risque
+
+		measure '% risque élevé' = DIVIDE ( _Mesures[Commandes risque élevé], _Mesures[Commandes scorées] )
+			formatString: 0.0%
+			displayFolder: 3. Risque
+
+		measure 'CA à risque élevé' = CALCULATE ( SUM ( fait_risque[montant_net_commande] ), fait_risque[niveau_risque] = "élevé" )
+			formatString: \$#,0
+			displayFolder: 3. Risque
+
+		measure 'Taux de retard réel (scorées)' = AVERAGE ( fait_risque[est_en_retard_reel] )
+			formatString: 0.0%
+			displayFolder: 3. Risque
+
+		measure 'Écart de calibration' = CALCULATE ( _Mesures[Probabilité moyenne de retard], fait_risque[est_annulee] = 0 ) - _Mesures[Taux de retard réel (scorées)]
+			formatString: +0.0%;-0.0%;0.0%
+			displayFolder: 3. Risque
+
+		measure 'Vrais positifs (test)' = CALCULATE ( _Mesures[Commandes scorées], fait_risque[jeu] = "test", fait_risque[alerte_retard] = 1, fait_risque[est_en_retard_reel] = 1 )
+			formatString: #,0
+			displayFolder: 3. Risque
+
+		measure 'Retards non anticipés (test)' = CALCULATE ( _Mesures[Commandes scorées], fait_risque[jeu] = "test", fait_risque[alerte_retard] = 0, fait_risque[est_en_retard_reel] = 1 )
+			formatString: #,0
+			displayFolder: 3. Risque
+
+		measure 'Fausses alertes (test)' = CALCULATE ( _Mesures[Commandes scorées], fait_risque[jeu] = "test", fait_risque[alerte_retard] = 1, fait_risque[est_en_retard_reel] == 0 )
+			formatString: #,0
+			displayFolder: 3. Risque
+
+		measure 'Recall des alertes (test)' = DIVIDE ( _Mesures[Vrais positifs (test)], _Mesures[Vrais positifs (test)] + _Mesures[Retards non anticipés (test)] )
+			formatString: 0.00%
+			displayFolder: 3. Risque
+
+		measure 'Précision des alertes (test)' = DIVIDE ( _Mesures[Vrais positifs (test)], _Mesures[Vrais positifs (test)] + _Mesures[Fausses alertes (test)] )
+			formatString: 0.00%
+			displayFolder: 3. Risque
+
+		measure 'Demande réelle (unités)' = SUM ( fait_demande_hebdo[quantite] )
+			formatString: #,0
+			displayFolder: 4. Prévision
+
+		measure 'Demande réelle - période stable (unités)' = CALCULATE ( _Mesures[Demande réelle (unités)], fait_demande_hebdo[apres_rupture] = FALSE () )
+			formatString: #,0
+			displayFolder: 4. Prévision
+
+		measure 'Prévision (unités)' = SUM ( fait_prevision[quantite_prevue] )
+			formatString: #,0
+			displayFolder: 4. Prévision
+
+		measure 'Borne basse (unités)' = SUM ( fait_prevision[borne_basse] )
+			formatString: #,0
+			displayFolder: 4. Prévision
+
+		measure 'Borne haute (unités)' = SUM ( fait_prevision[borne_haute] )
+			formatString: #,0
+			displayFolder: 4. Prévision
+
+		measure 'Prévision 12 semaines (unités)' = CALCULATE ( _Mesures[Prévision (unités)], fait_prevision[type_prevision] = "futur" )
+			formatString: #,0
+			displayFolder: 4. Prévision
+
+		measure 'Réel en backtest (unités)' = CALCULATE ( SUM ( fait_prevision[quantite_reelle] ), fait_prevision[type_prevision] = "backtest" )
+			formatString: #,0
+			displayFolder: 4. Prévision
+
+		measure 'Écart prévision/réel (unités)' = CALCULATE ( _Mesures[Prévision (unités)], fait_prevision[type_prevision] = "backtest" ) - _Mesures[Réel en backtest (unités)]
+			formatString: +#,0;-#,0;0
+			displayFolder: 4. Prévision
+
+		measure 'Écart prévision/réel %' = DIVIDE ( _Mesures[Écart prévision/réel (unités)], _Mesures[Réel en backtest (unités)] )
+			formatString: +0.0%;-0.0%;0.0%
+			displayFolder: 4. Prévision
+
+		measure 'MAPE' = AVERAGEX ( FILTER ( fait_prevision, fait_prevision[type_prevision] = "backtest" && fait_prevision[quantite_reelle] > 0 ), ABS ( fait_prevision[quantite_prevue] - fait_prevision[quantite_reelle] ) / fait_prevision[quantite_reelle] )
+			formatString: 0.0%
+			displayFolder: 4. Prévision

@@ -1,0 +1,50 @@
+# Supply Pulse - services
+#   postgres : entrepôt (modèle en étoile, prédictions, vues Power BI)
+#   api      : API FastAPI (risque de retard + prévisions)
+#
+# Base seule      : docker compose up -d postgres
+# Tout le projet  : docker compose up -d --build
+# Les identifiants sont lus depuis le fichier .env (voir .env.example).
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: supply_pulse_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-supply}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-supply}
+      POSTGRES_DB: ${POSTGRES_DB:-supply_pulse}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      # Volume nommé : les données survivent à un "docker compose down"
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # L'ETL et l'API attendront que la base réponde réellement
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-supply} -d ${POSTGRES_DB:-supply_pulse}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    image: supply-pulse-api:1.0
+    container_name: supply_pulse_api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy   # démarre seulement quand la base répond
+    environment:
+      # Dans le réseau Docker, la base s'appelle "postgres" et écoute sur 5432
+      # (le port 5433 n'existe que côté machine hôte).
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: ${POSTGRES_USER:-supply}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-supply}
+      POSTGRES_DB: ${POSTGRES_DB:-supply_pulse}
+    ports:
+      - "8000:8000"
+
+volumes:
+  pgdata:

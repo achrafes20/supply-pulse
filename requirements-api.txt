@@ -1,0 +1,14 @@
+# Dépendances de l'image Docker de l'API uniquement (sous-ensemble de requirements.txt).
+# Ni Prophet, ni SHAP, ni Jupyter : l'image reste légère. Versions identiques à
+# requirements.txt, indispensable pour recharger le modèle sérialisé (joblib).
+pandas==2.2.3
+numpy==1.26.4
+scikit-learn==1.5.2
+xgboost-cpu==2.1.3        # même module "xgboost", sans les ~650 Mo de bibliothèques GPU
+joblib==1.4.2
+SQLAlchemy==2.0.36
+psycopg2-binary==2.9.10
+python-dotenv==1.0.1
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+pydantic==2.10.2
